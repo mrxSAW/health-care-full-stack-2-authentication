@@ -1,0 +1,40 @@
+name: HealthCARE CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Donner les permissions à mvnw
+        run: chmod +x mvnw
+
+      - name: Exécuter les tests
+        run: ./mvnw test
+
+      - name: Build du projet
+        run: ./mvnw package -DskipTests
+
