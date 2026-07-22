@@ -1,8 +1,23 @@
 import { useEffect, useState } from "react";
-import { getAll,create,update,remove,downloadPdf} from "../services/dossierMedicalService";
+import { getRole } from "../services/authService";
+import { getErrorMessage } from "../utils/errorHandler";
+import {
+  getAll,
+  create,
+  update,
+  remove,
+  downloadPdf,
+} from "../services/dossierMedicalService";
 import DossierMedicalForm from "../components/DossierMedicalForm";
 
 function DossiersMedicaux() {
+  const role = getRole();
+
+  const canCreate = role === "ADMIN";
+  const canEdit = role === "ADMIN" || role === "MEDECIN";
+  const canDelete = role === "ADMIN";
+  const canDownload = role === "ADMIN" || role === "MEDECIN" || role === "PATIENT";
+
   const [dossiers, setDossiers] = useState([]);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -18,9 +33,8 @@ function DossiersMedicaux() {
     try {
       const data = await getAll();
       setDossiers(data.content || data);
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de charger les dossiers médicaux");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -35,9 +49,8 @@ function DossiersMedicaux() {
       setShowForm(false);
       setDossierToEdit(null);
       loadDossiers();
-    } catch (err) {
-      console.error(err);
-      setError("Impossible d'enregistrer ce dossier médical");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -64,9 +77,16 @@ function DossiersMedicaux() {
       await remove(dossierToDelete.id);
       setDossierToDelete(null);
       loadDossiers();
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de supprimer ce dossier médical");
+    } catch (error) {
+      setError(getErrorMessage(error));
+    }
+  }
+
+  async function handleDownloadPdf(id) {
+    try {
+      await downloadPdf(id);
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -75,9 +95,11 @@ function DossiersMedicaux() {
       <div className="page-header">
         <h1>Liste des dossiers médicaux</h1>
 
-        <button type="button" className="save-button" onClick={openAddForm}>
-          Ajouter dossier
-        </button>
+        {canCreate && (
+          <button type="button" className="save-button" onClick={openAddForm}>
+            Ajouter dossier
+          </button>
+        )}
       </div>
 
       {error && <p className="error-message">{error}</p>}
@@ -111,24 +133,45 @@ function DossiersMedicaux() {
               <td>{dossier.diagnostic}</td>
               <td>{dossier.observation}</td>
               <td>{dossier.dateCreation}</td>
-              
+
               <td>
-
-                <button type="button"   className="details-button"
+                <button
+                  type="button"
+                  className="details-button"
                   onClick={() => setSelectedDossier(dossier)}
-                > Détails </button>
+                >
+                  Détails
+                </button>
 
-                <button type="button" className="edit-button"
-                  onClick={() => openEditForm(dossier)}
-                > Modifier </button>
+                {canEdit && (
+                  <button
+                    type="button"
+                    className="edit-button"
+                    onClick={() => openEditForm(dossier)}
+                  >
+                    Modifier
+                  </button>
+                )}
 
-                <button type="button" className="delete-button"
-                  onClick={() => openDeleteConfirmation(dossier)}
-                > Supprimer </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    className="delete-button"
+                    onClick={() => openDeleteConfirmation(dossier)}
+                  >
+                    Supprimer
+                  </button>
+                )}
 
-               <button type="button" className="details-button"
-                onClick={() => downloadPdf(dossier.id)} > PDF  </button>
-
+                {canDownload && (
+                  <button
+                    type="button"
+                    className="details-button"
+                    onClick={() => handleDownloadPdf(dossier.id)}
+                  >
+                    PDF
+                  </button>
+                )}
               </td>
             </tr>
           ))}
@@ -151,7 +194,13 @@ function DossiersMedicaux() {
                 Annuler
               </button>
 
-  <button type="button" className="delete-button" onClick={confirmDelete}> Confirmer  </button>
+              <button
+                type="button"
+                className="delete-button"
+                onClick={confirmDelete}
+              >
+                Confirmer
+              </button>
             </div>
           </div>
         </div>
@@ -162,8 +211,13 @@ function DossiersMedicaux() {
           <div className="details-header">
             <h2>Détails du dossier médical</h2>
 
-             <button type="button"  className="cancel-button"
-              onClick={() => setSelectedDossier(null)}> Fermer </button>
+            <button
+              type="button"
+              className="cancel-button"
+              onClick={() => setSelectedDossier(null)}
+            >
+              Fermer
+            </button>
           </div>
 
           <p>

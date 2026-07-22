@@ -1,18 +1,16 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { login } from "../services/authService";
+import { Link, useNavigate } from "react-router-dom";
+import { register } from "../services/authService";
 import { getErrorMessage } from "../utils/errorHandler";
 
-function Login() {
+function Register() {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const message = location.state?.message;
-  const redirectTo = location.state?.from || "/dashboard";
 
   const [formData, setFormData] = useState({
-    identifier: "",
+    username: "",
+    email: "",
     password: "",
+    confirmPassword: "",
   });
 
   const [error, setError] = useState("");
@@ -31,11 +29,17 @@ function Login() {
     event.preventDefault();
 
     setError("");
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await login(formData.identifier, formData.password);
-      navigate(redirectTo, { replace: true });
+      await register(formData.username, formData.email, formData.password);
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       setError(getErrorMessage(error));
     } finally {
@@ -46,22 +50,34 @@ function Login() {
   return (
     <main className="login-page">
       <section className="login-container">
-        <h1>Connexion</h1>
+        <h1>Inscription</h1>
 
-        {message && <p className="info-message">{message}</p>}
         {error && <p className="error-message">{error}</p>}
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="identifier">Email ou nom d'utilisateur</label>
+            <label htmlFor="username">Nom d'utilisateur</label>
             <input
-              id="identifier"
-              name="identifier"
+              id="username"
+              name="username"
               type="text"
-              value={formData.identifier}
+              value={formData.username}
               onChange={handleChange}
               required
               autoComplete="username"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              autoComplete="email"
             />
           </div>
 
@@ -74,21 +90,34 @@ function Login() {
               value={formData.password}
               onChange={handleChange}
               required
-              autoComplete="current-password"
+              autoComplete="new-password"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirmer le mot de passe</label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              autoComplete="new-password"
             />
           </div>
 
           <button type="submit" disabled={loading}>
-            {loading ? "Connexion..." : "Se connecter"}
+            {loading ? "Création..." : "Créer un compte"}
           </button>
         </form>
 
         <p className="auth-switch">
-          Pas encore de compte ? <Link to="/register">Créer un compte</Link>
+          Déjà un compte ? <Link to="/login">Se connecter</Link>
         </p>
       </section>
     </main>
   );
 }
 
-export default Login;
+export default Register;

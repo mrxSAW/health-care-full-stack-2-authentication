@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
+import { getRole } from "../services/authService";
+import { getErrorMessage } from "../utils/errorHandler";
 import { getAll, create, update, remove } from "../services/rendezVousService";
 import RendezVousForm from "../components/RendezVousForm";
 
 function RendezVous() {
+  const role = getRole();
+
+  const canCreate = role === "ADMIN";
+  const canEdit = role === "ADMIN" || role === "MEDECIN";
+  const canDelete = role === "ADMIN";
+
   const [rendezVous, setRendezVous] = useState([]);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -18,9 +26,8 @@ function RendezVous() {
     try {
       const data = await getAll();
       setRendezVous(data.content || data);
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de charger les rendez-vous");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -35,9 +42,8 @@ function RendezVous() {
       setShowForm(false);
       setRendezVousToEdit(null);
       loadRendezVous();
-    } catch (err) {
-      console.error(err);
-      setError("Impossible d'enregistrer ce rendez-vous");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -64,9 +70,8 @@ function RendezVous() {
       await remove(rendezVousToDelete.id);
       setRendezVousToDelete(null);
       loadRendezVous();
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de supprimer ce rendez-vous");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -75,17 +80,22 @@ function RendezVous() {
       <div className="page-header">
         <h1>Liste des rendez-vous</h1>
 
-        <button type="button" className="save-button" onClick={openAddForm}>
-          Ajouter rendez-vous
-        </button>
+        {canCreate && (
+          <button type="button" className="save-button" onClick={openAddForm}>
+            Ajouter rendez-vous
+          </button>
+        )}
       </div>
 
       {error && <p className="error-message">{error}</p>}
 
       {showForm && (
-        <RendezVousForm initialData={rendezVousToEdit} onSubmit={handleSaveRendezVous}
-          onCancel={() => {setShowForm(false);
-               setRendezVousToEdit(null);
+        <RendezVousForm
+          initialData={rendezVousToEdit}
+          onSubmit={handleSaveRendezVous}
+          onCancel={() => {
+            setShowForm(false);
+            setRendezVousToEdit(null);
           }}
         />
       )}
@@ -117,21 +127,25 @@ function RendezVous() {
                   Détails
                 </button>
 
-                <button
-                  type="button"
-                  className="edit-button"
-                  onClick={() => openEditForm(item)}
-                >
-                  Modifier
-                </button>
+                {canEdit && (
+                  <button
+                    type="button"
+                    className="edit-button"
+                    onClick={() => openEditForm(item)}
+                  >
+                    Modifier
+                  </button>
+                )}
 
-                <button
-                  type="button"
-                  className="delete-button"
-                  onClick={() => openDeleteConfirmation(item)}
-                >
-                  Supprimer
-                </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    className="delete-button"
+                    onClick={() => openDeleteConfirmation(item)}
+                  >
+                    Supprimer
+                  </button>
+                )}
               </td>
             </tr>
           ))}
@@ -146,13 +160,17 @@ function RendezVous() {
             <p>Voulez-vous vraiment supprimer ce rendez-vous ?</p>
 
             <div className="confirm-actions">
-              <button type="button"className="cancel-button"
+              <button
+                type="button"
+                className="cancel-button"
                 onClick={closeDeleteConfirmation}
               >
                 Annuler
               </button>
 
-              <button type="button" className="delete-button"
+              <button
+                type="button"
+                className="delete-button"
                 onClick={confirmDelete}
               >
                 Confirmer
@@ -168,7 +186,8 @@ function RendezVous() {
             <h2>Détails du rendez-vous</h2>
 
             <button
-              type="button" className="cancel-button"
+              type="button"
+              className="cancel-button"
               onClick={() => setSelectedRendezVous(null)}
             >
               Fermer

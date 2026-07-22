@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { logout, isAuthenticated } from "../services/authService";
+import { getRole, isAuthenticated, logout } from "../services/authService";
 
 function Navbar() {
   const navigate = useNavigate();
   const connected = isAuthenticated();
+  const role = getRole();
   const [menuOpen, setMenuOpen] = useState(false);
 
   function handleLogout() {
@@ -17,13 +18,24 @@ function Navbar() {
     setMenuOpen(false);
   }
 
+  const canSeePatients = role === "ADMIN" || role === "MEDECIN";
+  const canSeeMedecins = role === "ADMIN" || role === "PATIENT";
+  const canSeeRendezVous =
+    role === "ADMIN" || role === "MEDECIN" || role === "PATIENT";
+  const canSeeDossiers =
+    role === "ADMIN" || role === "MEDECIN" || role === "PATIENT";
+
   return (
     <nav className="navbar">
       <h2>HealthCare+</h2>
 
       <button
-        type="button" className="menu-button"  onClick={() => setMenuOpen(!menuOpen)}
-       > ☰ </button>
+        type="button"
+        className="menu-button"
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
+        ☰
+      </button>
 
       <div className={menuOpen ? "nav-links open" : "nav-links"}>
         {connected && (
@@ -31,21 +43,36 @@ function Navbar() {
             <NavLink to="/home" onClick={closeMenu}>
               Accueil
             </NavLink>
+
             <NavLink to="/dashboard" onClick={closeMenu}>
               Tableau de bord
             </NavLink>
-            <NavLink to="/patients" onClick={closeMenu}>
-              Patients
-            </NavLink>
-            <NavLink to="/medecins" onClick={closeMenu}>
-              Médecins
-            </NavLink>
-            <NavLink to="/rendez-vous" onClick={closeMenu}>
-              Rendez-vous
-            </NavLink>
-            <NavLink to="/dossiers-medicaux" onClick={closeMenu}>
-              Dossiers médicaux
-            </NavLink>
+
+            {canSeePatients && (
+              <NavLink to="/patients" onClick={closeMenu}>
+                Patients
+              </NavLink>
+            )}
+
+            {canSeeMedecins && (
+              <NavLink to="/medecins" onClick={closeMenu}>
+                Médecins
+              </NavLink>
+            )}
+
+            {canSeeRendezVous && (
+              <NavLink to="/rendez-vous" onClick={closeMenu}>
+                Rendez-vous
+              </NavLink>
+            )}
+
+            {canSeeDossiers && (
+              <NavLink to="/dossiers-medicaux" onClick={closeMenu}>
+                Dossiers médicaux
+              </NavLink>
+            )}
+
+            <span className="role-badge">{role}</span>
           </>
         )}
 
@@ -58,9 +85,15 @@ function Navbar() {
             Déconnexion
           </button>
         ) : (
-          <NavLink to="/login" onClick={closeMenu}>
-            Connexion
-          </NavLink>
+          <>
+            <NavLink to="/login" onClick={closeMenu}>
+              Connexion
+            </NavLink>
+
+            <NavLink to="/register" onClick={closeMenu}>
+              Inscription
+            </NavLink>
+          </>
         )}
       </div>
     </nav>

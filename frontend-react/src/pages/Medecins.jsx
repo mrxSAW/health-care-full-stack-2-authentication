@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
+import { getRole } from "../services/authService";
+import { getErrorMessage } from "../utils/errorHandler";
 import { getAll, create, update, remove } from "../services/medecinService";
 import MedecinForm from "../components/MedecinForm";
 
 function Medecins() {
+  const role = getRole();
+
+  const canCreate = role === "ADMIN";
+  const canEdit = role === "ADMIN";
+  const canDelete = role === "ADMIN";
+
   const [medecins, setMedecins] = useState([]);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -18,9 +26,8 @@ function Medecins() {
     try {
       const data = await getAll();
       setMedecins(data.content || data);
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de charger les médecins");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -35,9 +42,8 @@ function Medecins() {
       setShowForm(false);
       setMedecinToEdit(null);
       loadMedecins();
-    } catch (err) {
-      console.error(err);
-      setError("Impossible d'enregistrer ce médecin");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -64,9 +70,8 @@ function Medecins() {
       await remove(medecinToDelete.id);
       setMedecinToDelete(null);
       loadMedecins();
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de supprimer ce médecin");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -75,16 +80,22 @@ function Medecins() {
       <div className="page-header">
         <h1>Liste des médecins</h1>
 
-        <button type="button" className="save-button" onClick={openAddForm}>
-          Ajouter médecin
-        </button>
+        {canCreate && (
+          <button type="button" className="save-button" onClick={openAddForm}>
+            Ajouter médecin
+          </button>
+        )}
       </div>
 
       {error && <p className="error-message">{error}</p>}
 
       {showForm && (
-        <MedecinForm  initialData={medecinToEdit}  onSubmit={handleSaveMedecin}
-          onCancel={() => { setShowForm(false); setMedecinToEdit(null);
+        <MedecinForm
+          initialData={medecinToEdit}
+          onSubmit={handleSaveMedecin}
+          onCancel={() => {
+            setShowForm(false);
+            setMedecinToEdit(null);
           }}
         />
       )}
@@ -111,26 +122,32 @@ function Medecins() {
               <td>{medecin.telephone}</td>
               <td>
                 <button
-                  type="button" className="details-button"
+                  type="button"
+                  className="details-button"
                   onClick={() => setSelectedMedecin(medecin)}
                 >
                   Détails
                 </button>
 
-                <button
-                  type="button"  className="edit-button"
-                  onClick={() => openEditForm(medecin)}
-                >
-                  Modifier
-                </button>
+                {canEdit && (
+                  <button
+                    type="button"
+                    className="edit-button"
+                    onClick={() => openEditForm(medecin)}
+                  >
+                    Modifier
+                  </button>
+                )}
 
-                <button
-                  type="button"
-                  className="delete-button"
-                  onClick={() => openDeleteConfirmation(medecin)}
-                >
-                  Supprimer
-                </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    className="delete-button"
+                    onClick={() => openDeleteConfirmation(medecin)}
+                  >
+                    Supprimer
+                  </button>
+                )}
               </td>
             </tr>
           ))}
@@ -149,14 +166,16 @@ function Medecins() {
 
             <div className="confirm-actions">
               <button
-                type="button" className="cancel-button"
+                type="button"
+                className="cancel-button"
                 onClick={closeDeleteConfirmation}
               >
                 Annuler
               </button>
 
               <button
-                type="button" className="delete-button"
+                type="button"
+                className="delete-button"
                 onClick={confirmDelete}
               >
                 Confirmer
@@ -199,6 +218,3 @@ function Medecins() {
 }
 
 export default Medecins;
-
-
-

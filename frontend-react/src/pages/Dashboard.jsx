@@ -1,37 +1,62 @@
 import { useEffect, useState } from "react";
+import { getRole } from "../services/authService";
+import { getErrorMessage } from "../utils/errorHandler";
 import { getAll as getPatients } from "../services/patientService";
 import { getAll as getMedecins } from "../services/medecinService";
 import { getAll as getRendezVous } from "../services/rendezVousService";
 import { getAll as getDossiers } from "../services/dossierMedicalService";
 
 function Dashboard() {
+  const role = getRole();
+
   const [stats, setStats] = useState({
-    patients: 0,medecins: 0,
-    rendezVous: 0,dossiers: 0,});
+    patients: 0,
+    medecins: 0,
+    rendezVous: 0,
+    dossiers: 0,
+  });
 
   const [error, setError] = useState("");
 
-  useEffect(() => { loadStats();}, []);
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const requests = [];
 
-  async function loadStats() {
-    try {
-      const patientsData = await getPatients();
-      const medecinsData = await getMedecins();
-      const rendezVousData = await getRendezVous();
-      const dossiersData = await getDossiers();
+        if (role === "ADMIN" || role === "MEDECIN") {
+          requests.push(getPatients());
+        } else {
+          requests.push(Promise.resolve(null));
+        }
 
-      setStats({
-        patients: getTotal(patientsData),medecins: getTotal(medecinsData),
-        rendezVous: getTotal(rendezVousData),dossiers: getTotal(dossiersData),
-      });
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de charger les statistiques");
+        if (role === "ADMIN" || role === "PATIENT") {
+          requests.push(getMedecins());
+        } else {
+          requests.push(Promise.resolve(null));
+        }
+
+        requests.push(getRendezVous());
+        requests.push(getDossiers());
+
+        const [patientsData, medecinsData, rendezVousData, dossiersData] =
+          await Promise.all(requests);
+
+        setStats({
+          patients: patientsData ? getTotal(patientsData) : 0,
+          medecins: medecinsData ? getTotal(medecinsData) : 0,
+          rendezVous: getTotal(rendezVousData),
+          dossiers: getTotal(dossiersData),
+        });
+      } catch (error) {
+        setError(getErrorMessage(error));
+      }
     }
-  }
+
+    loadStats();
+  }, [role]);
 
   function getTotal(data) {
-    if (data.totalElements !== undefined) {
+    if (data?.totalElements !== undefined) {
       return data.totalElements;
     }
 
@@ -48,18 +73,24 @@ function Dashboard() {
 
       <p>Bienvenue sur le tableau de bord de HealthCare+.</p>
 
+      {role && <p className="info-message">Rôle connecté : {role}</p>}
+
       {error && <p className="error-message">{error}</p>}
 
       <section className="stats-grid">
-        <div className="stat-card">
-          <h2>{stats.patients}</h2>
-          <p>Patients</p>
-        </div>
+        {(role === "ADMIN" || role === "MEDECIN") && (
+          <div className="stat-card">
+            <h2>{stats.patients}</h2>
+            <p>Patients</p>
+          </div>
+        )}
 
-        <div className="stat-card">
-          <h2>{stats.medecins}</h2>
-          <p>Médecins</p>
-        </div>
+        {(role === "ADMIN" || role === "PATIENT") && (
+          <div className="stat-card">
+            <h2>{stats.medecins}</h2>
+            <p>Médecins</p>
+          </div>
+        )}
 
         <div className="stat-card">
           <h2>{stats.rendezVous}</h2>

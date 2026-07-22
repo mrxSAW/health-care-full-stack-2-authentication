@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
+import { getRole } from "../services/authService";
+import { getErrorMessage } from "../utils/errorHandler";
 import { getAll, create, update, remove } from "../services/patientService";
 import PatientForm from "../components/PatientForm";
 
 function Patients() {
+  const role = getRole();
+
+  const canCreate = role === "ADMIN";
+  const canEdit = role === "ADMIN";
+  const canDelete = role === "ADMIN";
+
   const [patients, setPatients] = useState([]);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -18,9 +26,8 @@ function Patients() {
     try {
       const data = await getAll();
       setPatients(data.content || data);
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de charger les patients");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -35,9 +42,8 @@ function Patients() {
       setShowForm(false);
       setPatientToEdit(null);
       loadPatients();
-    } catch (err) {
-      console.error(err);
-      setError("Impossible d'enregistrer ce patient");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -64,9 +70,8 @@ function Patients() {
       await remove(patientToDelete.id);
       setPatientToDelete(null);
       loadPatients();
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de supprimer ce patient");
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
   }
 
@@ -75,16 +80,20 @@ function Patients() {
       <div className="page-header">
         <h1>Liste des patients</h1>
 
-        <button type="button" className="save-button" onClick={openAddForm}>
-          Ajouter patient
-        </button>
+        {canCreate && (
+          <button type="button" className="save-button" onClick={openAddForm}>
+            Ajouter patient
+          </button>
+        )}
       </div>
 
       {error && <p className="error-message">{error}</p>}
 
       {showForm && (
-        <PatientForm initialData={patientToEdit} onSubmit={handleSavePatient}
-          onCancel={() => {  
+        <PatientForm
+          initialData={patientToEdit}
+          onSubmit={handleSavePatient}
+          onCancel={() => {
             setShowForm(false);
             setPatientToEdit(null);
           }}
@@ -120,21 +129,25 @@ function Patients() {
                   Détails
                 </button>
 
-                <button
-                  type="button"
-                  className="edit-button"
-                  onClick={() => openEditForm(patient)}
-                >
-                  Modifier
-                </button>
+                {canEdit && (
+                  <button
+                    type="button"
+                    className="edit-button"
+                    onClick={() => openEditForm(patient)}
+                  >
+                    Modifier
+                  </button>
+                )}
 
-                <button
-                  type="button"
-                  className="delete-button"
-                  onClick={() => openDeleteConfirmation(patient)}
-                >
-                  Supprimer
-                </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    className="delete-button"
+                    onClick={() => openDeleteConfirmation(patient)}
+                  >
+                    Supprimer
+                  </button>
+                )}
               </td>
             </tr>
           ))}
@@ -156,14 +169,16 @@ function Patients() {
 
             <div className="confirm-actions">
               <button
-                type="button"  className="cancel-button"
+                type="button"
+                className="cancel-button"
                 onClick={closeDeleteConfirmation}
               >
                 Annuler
               </button>
 
               <button
-                type="button"   className="delete-button"
+                type="button"
+                className="delete-button"
                 onClick={confirmDelete}
               >
                 Confirmer
@@ -179,7 +194,8 @@ function Patients() {
             <h2>Détails du patient</h2>
 
             <button
-              type="button"  className="cancel-button"
+              type="button"
+              className="cancel-button"
               onClick={() => setSelectedPatient(null)}
             >
               Fermer
@@ -199,7 +215,8 @@ function Patients() {
             <strong>Téléphone :</strong> {selectedPatient.telephone}
           </p>
           <p>
-            <strong>Date de naissance :</strong>{" "} {selectedPatient.dateNaissance}
+            <strong>Date de naissance :</strong>{" "}
+            {selectedPatient.dateNaissance}
           </p>
         </div>
       )}
