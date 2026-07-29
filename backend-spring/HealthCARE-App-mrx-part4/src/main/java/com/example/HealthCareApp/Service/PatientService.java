@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import com.example.HealthCareApp.DTO.PageResponseDTO;
 
 @Service
 public class PatientService {
@@ -56,9 +57,12 @@ public class PatientService {
         return mapper.toGetDTO(patient);
     }
 
-@Cacheable(value="patients" , key=" #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
-    public Page<PatientGetDTO> getAll(Pageable pageable) {
-        return repo.findAll(pageable).map(patient -> mapper.toGetDTO(patient));
+    @Cacheable(value = "patients", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
+    public PageResponseDTO<PatientGetDTO> getAll(Pageable pageable) {
+        Page<PatientGetDTO> page = repo.findAll(pageable)
+                .map(patient -> mapper.toGetDTO(patient));
+
+        return PageResponseDTO.from(page);
     }
 
     public Page<PatientGetDTO> searchByNom(String nom, Pageable pageable) {

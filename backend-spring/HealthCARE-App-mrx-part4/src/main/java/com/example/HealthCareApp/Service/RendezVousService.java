@@ -1,5 +1,6 @@
 package com.example.HealthCareApp.Service;
 
+import com.example.HealthCareApp.DTO.PageResponseDTO;
 import com.example.HealthCareApp.DTO.RendezVous.RendezVousGetDTO;
 import com.example.HealthCareApp.DTO.RendezVous.RendezVousPostDTO;
 import com.example.HealthCareApp.DTO.RendezVous.RendezVousUpdateDTO;
@@ -31,7 +32,7 @@ public class RendezVousService {
         this.mapper = mapper;
     }
 
-    @CacheEvict(value = {"rendezVous", "rendezVousParPatient", "rendezVousParMedcin"}, allEntries = true)
+    @CacheEvict(value = {"rendezVous", "rendezVousParPatient", "rendezVousParMedcin", "rendezVousPatientId", "rendezVousMedcinId"}, allEntries = true)
     public RendezVousGetDTO save(RendezVousPostDTO dto) {
         RendezVous rendezVous = mapper.toEntity(dto);
 
@@ -46,20 +47,27 @@ public class RendezVousService {
     }
 
     @Cacheable(value = "rendezVousParPatient", key = "#email + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
-    public Page<RendezVousGetDTO> findMyPatientRendezVous(String email, Pageable pageable) {
-        return repo.findByPatientUserEmail(email, pageable)
+    public PageResponseDTO<RendezVousGetDTO> findMyPatientRendezVous(String email, Pageable pageable) {
+        Page<RendezVousGetDTO> page = repo.findByPatientUserEmail(email, pageable)
                 .map(mapper::toGetDTO);
+
+        return PageResponseDTO.from(page);
     }
 
     @Cacheable(value = "rendezVousParMedcin", key = "#email + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
-    public Page<RendezVousGetDTO> findMyMedcinRendezVous(String email, Pageable pageable) {
-        return repo.findByMedcinUserEmail(email, pageable)
+    public PageResponseDTO<RendezVousGetDTO> findMyMedcinRendezVous(String email, Pageable pageable) {
+        Page<RendezVousGetDTO> page = repo.findByMedcinUserEmail(email, pageable)
                 .map(mapper::toGetDTO);
+
+        return PageResponseDTO.from(page);
     }
 
-    @Cacheable( value = "rendezVous",key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
-    public Page<RendezVousGetDTO> getAll(Pageable pageable) {
-        return repo.findAll(pageable).map(rendezVous -> mapper.toGetDTO(rendezVous));
+    @Cacheable(value = "rendezVous", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
+    public PageResponseDTO<RendezVousGetDTO> getAll(Pageable pageable) {
+        Page<RendezVousGetDTO> page = repo.findAll(pageable)
+                .map(rendezVous -> mapper.toGetDTO(rendezVous));
+
+        return PageResponseDTO.from(page);
     }
 
     public Page<RendezVousGetDTO> searchByStatut(String statut, Pageable pageable) {
@@ -67,23 +75,23 @@ public class RendezVousService {
                 .map(rendezVous -> mapper.toGetDTO(rendezVous));
     }
 
-    @Cacheable(value = "rendezVousPatientId",
-            key = "#patientId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
-    public Page<RendezVousGetDTO> findByPatient(int patientId, Pageable pageable) {
-        return repo.findByPatientId(patientId, pageable)
+    @Cacheable(value = "rendezVousPatientId", key = "#patientId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
+    public PageResponseDTO<RendezVousGetDTO> findByPatient(int patientId, Pageable pageable) {
+        Page<RendezVousGetDTO> page = repo.findByPatientId(patientId, pageable)
                 .map(rendezVous -> mapper.toGetDTO(rendezVous));
+
+        return PageResponseDTO.from(page);
     }
 
-    @Cacheable(value = "rendezVousMedcinId",
-            key = "#medcinId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
-    public Page<RendezVousGetDTO> findByMedcin(int medcinId, Pageable pageable) {
-        return repo.findByMedcinId(medcinId, pageable)
+    @Cacheable(value = "rendezVousMedcinId", key = "#medcinId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
+    public PageResponseDTO<RendezVousGetDTO> findByMedcin(int medcinId, Pageable pageable) {
+        Page<RendezVousGetDTO> page = repo.findByMedcinId(medcinId, pageable)
                 .map(rendezVous -> mapper.toGetDTO(rendezVous));
+
+        return PageResponseDTO.from(page);
     }
 
-    @CacheEvict(
-            value = {"rendezVous", "rendezVousParPatient", "rendezVousParMedcin", "rendezVousPatientId", "rendezVousMedcinId"},
-            allEntries = true)
+    @CacheEvict(value = {"rendezVous", "rendezVousParPatient", "rendezVousParMedcin", "rendezVousPatientId", "rendezVousMedcinId"}, allEntries = true)
     public RendezVousGetDTO update(int id, RendezVousUpdateDTO dto) {
         RendezVous rendezVous = repo.findById(id).orElse(null);
 
@@ -103,8 +111,7 @@ public class RendezVousService {
         return mapper.toGetDTO(updated);
     }
 
-    @CacheEvict( value = {"rendezVous", "rendezVousParPatient", "rendezVousParMedcin",
-                    "rendezVousPatientId", "rendezVousMedcinId"}, allEntries = true)
+    @CacheEvict(value = {"rendezVous", "rendezVousParPatient", "rendezVousParMedcin", "rendezVousPatientId", "rendezVousMedcinId"}, allEntries = true)
     public void delete(int id) {
         repo.deleteById(id);
     }

@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Unauthorized from "./pages/Unauthorized";
 
+
 function App() {
   return (
     <BrowserRouter>
@@ -33,13 +34,12 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Navigate to="/home" replace />} />
               <Route path="/home" element={<Home />} />
-              <Route
-                element={ <RoleGuard allowedRoles={["ADMIN", "MEDECIN", "PATIENT"]} /> } >
+              <Route  element={ <RoleGuard allowedRoles={["ADMIN", "MEDECIN", "PATIENT"]} /> } >
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/rendez-vous" element={<RendezVous />} />
                 <Route path="/dossiers-medicaux" element={<DossiersMedicaux />} />
               </Route>
-
+              
               <Route element={<RoleGuard allowedRoles={["ADMIN", "MEDECIN"]} />}>
                 <Route path="/patients" element={<Patients />} />
               </Route>

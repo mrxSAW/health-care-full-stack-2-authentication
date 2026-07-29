@@ -1,9 +1,19 @@
 import api from "../api/axiosConfig";
 
-export async function getAll(page = 0, size = 10) {
-  const response = await api.get(`/patients?page=${page}&size=${size}`);
+export async function getAll(page = 0, size = 10, direction = "asc") {
+  const response = await api.get(
+    `/patients?page=${page}&size=${size}&sort=nom&direction=${direction}`
+  );
   return response.data;
 }
+
+export async function searchByNom(nom, page = 0, size = 10, direction = "asc") {
+  const response = await api.get(
+    `/patients/search?nom=${nom}&page=${page}&size=${size}&sort=nom&direction=${direction}`
+  );
+  return response.data;
+}
+
 
 export async function getById(id) {
   const response = await api.get(`/patients/${id}`);

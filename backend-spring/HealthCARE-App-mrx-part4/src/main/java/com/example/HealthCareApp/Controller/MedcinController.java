@@ -1,5 +1,6 @@
 package com.example.HealthCareApp.Controller;
 
+import com.example.HealthCareApp.DTO.PageResponseDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinGetDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinPostDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinUpdateDTO;
@@ -34,17 +35,23 @@ public class MedcinController {
         String email = authentication.getName();
         return service.getMyProfile(email);
     }
+
     @GetMapping
-    public Page<MedcinGetDTO> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "specialite") String sort, @RequestParam(defaultValue = "asc") String direction) {
+    public PageResponseDTO<MedcinGetDTO> list(@RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "5") int size,
+                                              @RequestParam(defaultValue = "specialite") String sort,
+                                              @RequestParam(defaultValue = "asc") String direction) {
 
         Pageable pageable = createPageable(page, size, sort, direction);
         return service.getAll(pageable);
     }
 
     @GetMapping("/search")
-    public Page<MedcinGetDTO> searchBySpecialite(@RequestParam String specialite, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "specialite") String sort, @RequestParam(defaultValue = "asc") String direction) {
+    public Page<MedcinGetDTO> searchBySpecialite(@RequestParam String specialite,
+                                                 @RequestParam(defaultValue = "0") int page,
+                                                 @RequestParam(defaultValue = "5") int size,
+                                                 @RequestParam(defaultValue = "specialite") String sort,
+                                                 @RequestParam(defaultValue = "asc") String direction) {
 
         Pageable pageable = createPageable(page, size, sort, direction);
         return service.searchBySpecialite(specialite, pageable);

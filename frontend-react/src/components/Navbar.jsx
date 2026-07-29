@@ -76,9 +76,7 @@ function Navbar() {
           </>
         )}
 
-        <NavLink to="/about" onClick={closeMenu}>
-          À propos
-        </NavLink>
+        <NavLink to="/about" onClick={closeMenu}> À propos </NavLink>
 
         {connected ? (
           <button type="button" className="logout-button" onClick={handleLogout}>

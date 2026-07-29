@@ -1,5 +1,6 @@
 package com.example.HealthCareApp.Service;
 
+import com.example.HealthCareApp.DTO.PageResponseDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinGetDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinPostDTO;
 import com.example.HealthCareApp.DTO.Patient.PatientGetDTO;
@@ -10,13 +11,11 @@ import com.example.HealthCareApp.DTO.RendezVous.RendezVousUpdateDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,21 +32,16 @@ class RendezVousServiceTest {
     @Autowired
     private MedcinService medcinService;
 
-
     @Test
     void save() {
-
-
         PatientPostDTO p = new PatientPostDTO();
         p.setNom("Ali");
         PatientGetDTO patient = patientService.save(p);
-
 
         MedcinPostDTO m = new MedcinPostDTO();
         m.setNom("Dr Ahmed");
         m.setSpecialite("Cardio");
         MedcinGetDTO medcin = medcinService.save(m);
-
 
         RendezVousPostDTO dto = new RendezVousPostDTO();
         dto.setDateRendezVous(LocalDateTime.now());
@@ -61,21 +55,18 @@ class RendezVousServiceTest {
         assertTrue(result.getId() > 0);
     }
 
-
     @Test
     void getAll() {
-
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<RendezVousGetDTO> list = service.getAll(pageable);
+        PageResponseDTO<RendezVousGetDTO> list = service.getAll(pageable);
 
         assertNotNull(list);
+        assertNotNull(list.getContent());
     }
-
 
     @Test
     void update() {
-
         PatientGetDTO patient = patientService.save(new PatientPostDTO());
         MedcinGetDTO medcin = medcinService.save(new MedcinPostDTO());
 
@@ -98,10 +89,8 @@ class RendezVousServiceTest {
         assertEquals("UPDATED", updated.getStatut());
     }
 
-
     @Test
     void delete() {
-
         PatientGetDTO patient = patientService.save(new PatientPostDTO());
         MedcinGetDTO medcin = medcinService.save(new MedcinPostDTO());
 
@@ -116,12 +105,11 @@ class RendezVousServiceTest {
         service.delete(saved.getId());
 
         Pageable pageable = PageRequest.of(0, 10);
-
-        Page<RendezVousGetDTO> list = service.getAll(pageable);
+        PageResponseDTO<RendezVousGetDTO> list = service.getAll(pageable);
 
         boolean exists = false;
 
-        for (RendezVousGetDTO r : list) {
+        for (RendezVousGetDTO r : list.getContent()) {
             if (r.getId() == saved.getId()) {
                 exists = true;
             }
@@ -130,10 +118,8 @@ class RendezVousServiceTest {
         assertFalse(exists);
     }
 
-
     @Test
     void findByPatient() {
-
         PatientPostDTO p = new PatientPostDTO();
         p.setNom("PatientSearch");
         PatientGetDTO patient = patientService.save(p);
@@ -150,16 +136,15 @@ class RendezVousServiceTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<RendezVousGetDTO> result = service.findByPatient(patient.getId(), pageable);
+        PageResponseDTO<RendezVousGetDTO> result = service.findByPatient(patient.getId(), pageable);
 
         assertNotNull(result);
-        assertFalse(result.isEmpty());
+        assertNotNull(result.getContent());
+        assertFalse(result.getContent().isEmpty());
     }
-
 
     @Test
     void findByMedcin() {
-
         PatientGetDTO patient = patientService.save(new PatientPostDTO());
 
         MedcinPostDTO m = new MedcinPostDTO();
@@ -176,9 +161,10 @@ class RendezVousServiceTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<RendezVousGetDTO> result = service.findByMedcin(medcin.getId(), pageable);
+        PageResponseDTO<RendezVousGetDTO> result = service.findByMedcin(medcin.getId(), pageable);
 
         assertNotNull(result);
-        assertFalse(result.isEmpty());
+        assertNotNull(result.getContent());
+        assertFalse(result.getContent().isEmpty());
     }
 }

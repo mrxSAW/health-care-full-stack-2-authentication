@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { getRole } from "../services/authService";
 import { getErrorMessage } from "../utils/errorHandler";
-import { getAll, create, update, remove } from "../services/patientService";
+import { getAll,searchByNom, create, update, remove } from "../services/patientService";
 import PatientForm from "../components/PatientForm";
+import { toast } from "react-toastify";
 
 function Patients() {
   const role = getRole();
@@ -17,17 +18,26 @@ function Patients() {
   const [patientToDelete, setPatientToDelete] = useState(null);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [patientToEdit, setPatientToEdit] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortDirection, setSortDirection] = useState("asc");
+
 
   useEffect(() => {
     loadPatients();
-  }, []);
+  }, [searchTerm, sortDirection]);
+
+
 
   async function loadPatients() {
     try {
-      const data = await getAll();
-      setPatients(data.content || data);
+      setError("");
+
+      const data = searchTerm.trim() ? await searchByNom(searchTerm, 0, 10, sortDirection): await getAll(0, 10, sortDirection);
+      setPatients(data.content || data||[]);
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+       setError(message);
+       toast.error(message);
     }
   }
 
@@ -35,15 +45,19 @@ function Patients() {
     try {
       if (patientToEdit) {
         await update(patientToEdit.id, patientData);
+        toast.success("Patient modifié avec succès.");
       } else {
         await create(patientData);
+        toast.success("Patient ajouté avec succès.");
       }
 
       setShowForm(false);
       setPatientToEdit(null);
       loadPatients();
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message=getErrorMessage(error);
+      setError(messageb);
+      toast.error(message)
     }
   }
 
@@ -68,10 +82,13 @@ function Patients() {
   async function confirmDelete() {
     try {
       await remove(patientToDelete.id);
+      toast.success("Patient supprimé avec succès.");
       setPatientToDelete(null);
       loadPatients();
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+    setError(message);
+    toast.error(message);
     }
   }
 
@@ -90,16 +107,25 @@ function Patients() {
       {error && <p className="error-message">{error}</p>}
 
       {showForm && (
-        <PatientForm
-          initialData={patientToEdit}
-          onSubmit={handleSavePatient}
-          onCancel={() => {
-            setShowForm(false);
-            setPatientToEdit(null);
-          }}
+        <PatientForm initialData={patientToEdit} onSubmit={handleSavePatient}
+          onCancel={() => { setShowForm(false); setPatientToEdit(null); }}
         />
       )}
+         
+  <div className="filters-bar">
 
+       <input  type="text" placeholder="Rechercher un patient par nom..." value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+     <select value={sortDirection} onChange={(e) => setSortDirection(e.target.value)} >
+       <option value="asc">A → Z</option>
+       <option value="desc">Z → A</option>
+      </select>
+
+  </div>
+
+{patients.length === 0 && !error && (<p className="empty-message">Aucun patient trouvé.</p> )}
       <table className="simple-table">
         <thead>
           <tr>

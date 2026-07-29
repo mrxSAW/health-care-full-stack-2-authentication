@@ -1,5 +1,6 @@
 package com.example.HealthCareApp.Service;
 
+import com.example.HealthCareApp.DTO.PageResponseDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinGetDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinPostDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinUpdateDTO;
@@ -54,10 +55,12 @@ public class MedcinService {
         return mapper.toGetDTO(medcin);
     }
 
-    @Cacheable(value = "medcins", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort"
-    )
-    public Page<MedcinGetDTO> getAll(Pageable pageable) {
-        return repo.findAll(pageable).map(medcin -> mapper.toGetDTO(medcin));
+    @Cacheable(value = "medcins", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
+    public PageResponseDTO<MedcinGetDTO> getAll(Pageable pageable) {
+        Page<MedcinGetDTO> page = repo.findAll(pageable)
+                .map(medcin -> mapper.toGetDTO(medcin));
+
+        return PageResponseDTO.from(page);
     }
 
     public Page<MedcinGetDTO> searchBySpecialite(String specialite, Pageable pageable) {

@@ -31,10 +31,11 @@ export function logout() {
   clearSession();
 }
 
-export { getCurrentUser, getRole, getToken, getUserId, hasRole };
-
 export function isAuthenticated() {
   return isSessionValid();
 }
+export { getCurrentUser, getRole, getToken, getUserId, hasRole };
+
+
 
 

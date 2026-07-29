@@ -80,25 +80,25 @@ function Dashboard() {
       <section className="stats-grid">
         {(role === "ADMIN" || role === "MEDECIN") && (
           <div className="stat-card">
-            <h2>{stats.patients}</h2>
+            <h2>{stats.patients ? stats.patients : "Chargement.."}</h2>
             <p>Patients</p>
           </div>
         )}
 
         {(role === "ADMIN" || role === "PATIENT") && (
           <div className="stat-card">
-            <h2>{stats.medecins}</h2>
+            <h2>{stats.medecins ? stats.medecins : "Chargement.."}</h2>
             <p>Médecins</p>
           </div>
         )}
 
         <div className="stat-card">
-          <h2>{stats.rendezVous}</h2>
+          <h2>{stats.rendezVous ? stats.rendezVous : "Chargement.."} </h2>
           <p>Rendez-vous</p>
         </div>
 
         <div className="stat-card">
-          <h2>{stats.dossiers}</h2>
+          <h2>{stats.dossiers ? stats.dossiers : "Chargement.."}</h2>
           <p>Dossiers médicaux</p>
         </div>
       </section>

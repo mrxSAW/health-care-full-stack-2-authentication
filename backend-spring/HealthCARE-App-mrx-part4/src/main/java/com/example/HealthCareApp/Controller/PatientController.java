@@ -14,6 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import com.example.HealthCareApp.DTO.PageResponseDTO;
+
 
 @RestController
 @RequestMapping("/patients")
@@ -32,8 +34,10 @@ public class PatientController {
     }
 
     @GetMapping
-    public Page<PatientGetDTO> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "nom") String sort, @RequestParam(defaultValue = "asc") String direction) {
+    public PageResponseDTO<PatientGetDTO> list(@RequestParam(defaultValue = "0") int page,
+                                               @RequestParam(defaultValue = "5") int size,
+                                               @RequestParam(defaultValue = "nom") String sort,
+                                               @RequestParam(defaultValue = "asc") String direction) {
 
         Pageable pageable = createPageable(page, size, sort, direction);
         return service.getAll(pageable);

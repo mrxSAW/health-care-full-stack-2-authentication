@@ -1,31 +1,29 @@
 package com.example.HealthCareApp.Service;
 
+import com.example.HealthCareApp.DTO.PageResponseDTO;
 import com.example.HealthCareApp.DTO.Patient.PatientGetDTO;
 import com.example.HealthCareApp.DTO.Patient.PatientPostDTO;
 import com.example.HealthCareApp.DTO.Patient.PatientUpdateDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
+
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 @ActiveProfiles("test")
 class PatientServiceTest {
 
-
     @Autowired
     private PatientService service;
 
-
     @Test
     void save() {
-
         PatientPostDTO dto = new PatientPostDTO();
         dto.setNom("Ali");
         dto.setPrenom("Ahmed");
@@ -40,42 +38,31 @@ class PatientServiceTest {
         assertEquals("Ali", result.getNom());
     }
 
-
-
-
-
-
-
     @Test
     void getAll() {
-
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<PatientGetDTO> list = service.getAll(pageable);
+        PageResponseDTO<PatientGetDTO> list = service.getAll(pageable);
 
         assertNotNull(list);
+        assertNotNull(list.getContent());
     }
-
 
     @Test
     void getById() {
-
         PatientPostDTO dto = new PatientPostDTO();
         dto.setNom("Test");
         dto.setPrenom("User");
 
         PatientGetDTO saved = service.save(dto);
-
         PatientGetDTO found = service.getById(saved.getId());
 
         assertNotNull(found);
         assertEquals(saved.getId(), found.getId());
     }
 
-
     @Test
     void update() {
-
         PatientPostDTO dto = new PatientPostDTO();
         dto.setNom("Old");
 
@@ -89,10 +76,8 @@ class PatientServiceTest {
         assertEquals("New Name", updated.getNom());
     }
 
-
     @Test
     void delete() {
-
         PatientPostDTO dto = new PatientPostDTO();
         dto.setNom("ToDelete");
 
@@ -104,5 +89,4 @@ class PatientServiceTest {
 
         assertNull(result);
     }
-
 }

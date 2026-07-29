@@ -1,5 +1,6 @@
 package com.example.HealthCareApp.Service;
 
+import com.example.HealthCareApp.DTO.PageResponseDTO;
 import com.example.HealthCareApp.DTO.DossierMedical.DossierMedicalGetDTO;
 import com.example.HealthCareApp.DTO.DossierMedical.DossierMedicalPostDTO;
 import com.example.HealthCareApp.DTO.DossierMedical.DossierMedicalUpdateDTO;
@@ -25,10 +26,7 @@ public class DossierMedicalService {
     private final PatientRepository patientRepo;
     private final DossierMedicalMapper mapper;
 
-    @CacheEvict(
-            value = {"dossiersMedicaux", "dossierMedical", "dossierMedicalPatient"},
-            allEntries = true
-    )
+    @CacheEvict(value = {"dossiersMedicaux", "dossierMedical", "dossierMedicalPatient"}, allEntries = true)
     public DossierMedicalGetDTO save(DossierMedicalPostDTO dto) {
         DossierMedical dossier = mapper.toEntity(dto);
 
@@ -48,8 +46,11 @@ public class DossierMedicalService {
     }
 
     @Cacheable(value = "dossiersMedicaux", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
-    public Page<DossierMedicalGetDTO> getAll(Pageable pageable) {
-        return repo.findAll(pageable).map(dossierMedical -> mapper.toGetDTO(dossierMedical));
+    public PageResponseDTO<DossierMedicalGetDTO> getAll(Pageable pageable) {
+        Page<DossierMedicalGetDTO> page = repo.findAll(pageable)
+                .map(dossierMedical -> mapper.toGetDTO(dossierMedical));
+
+        return PageResponseDTO.from(page);
     }
 
     @Cacheable(value = "dossierMedical", key = "#id")
@@ -77,10 +78,7 @@ public class DossierMedicalService {
         return mapper.toGetDTO(updated);
     }
 
-    @CacheEvict(
-            value = {"dossiersMedicaux", "dossierMedical", "dossierMedicalPatient"},
-            allEntries = true
-    )
+    @CacheEvict(value = {"dossiersMedicaux", "dossierMedical", "dossierMedicalPatient"}, allEntries = true)
     public void delete(int id) {
         DossierMedical dossier = repo.findById(id).orElse(null);
 

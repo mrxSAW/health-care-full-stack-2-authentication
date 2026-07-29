@@ -1,19 +1,15 @@
 package com.example.HealthCareApp.Service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import com.example.HealthCareApp.DTO.PageResponseDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinGetDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinPostDTO;
 import com.example.HealthCareApp.DTO.Medcin.MedcinUpdateDTO;
-import com.example.HealthCareApp.Entity.Medcin;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,7 +22,6 @@ class MedcinServiceTest {
 
     @Test
     void save() {
-
         MedcinPostDTO dto = new MedcinPostDTO();
         dto.setNom("Dr Ali");
         dto.setSpecialite("Cardiologie");
@@ -43,7 +38,6 @@ class MedcinServiceTest {
 
     @Test
     void getAll() {
-
         MedcinPostDTO dto = new MedcinPostDTO();
         dto.setNom("Dr Test");
         dto.setSpecialite("Dermatologie");
@@ -52,21 +46,20 @@ class MedcinServiceTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<MedcinGetDTO> list = service.getAll(pageable);
+        PageResponseDTO<MedcinGetDTO> list = service.getAll(pageable);
 
         assertNotNull(list);
-        assertFalse(list.isEmpty());
+        assertNotNull(list.getContent());
+        assertFalse(list.getContent().isEmpty());
     }
 
     @Test
     void getById() {
-
         MedcinPostDTO dto = new MedcinPostDTO();
         dto.setNom("Dr Samir");
         dto.setSpecialite("ORL");
 
         MedcinGetDTO saved = service.save(dto);
-
         MedcinGetDTO found = service.getById(saved.getId());
 
         assertNotNull(found);
@@ -76,7 +69,6 @@ class MedcinServiceTest {
 
     @Test
     void update() {
-
         MedcinPostDTO dto = new MedcinPostDTO();
         dto.setNom("Dr Old");
         dto.setSpecialite("Generaliste");
@@ -98,7 +90,6 @@ class MedcinServiceTest {
 
     @Test
     void delete() {
-
         MedcinPostDTO dto = new MedcinPostDTO();
         dto.setNom("Dr Delete");
         dto.setSpecialite("Radio");
@@ -111,5 +102,4 @@ class MedcinServiceTest {
 
         assertNull(result);
     }
-
 }
