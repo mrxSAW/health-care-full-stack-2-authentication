@@ -94,4 +94,22 @@ public class DossierMedicalService {
             repo.flush();
         }
     }
+
+
+
+    @Cacheable(value = "dossierMedicalPatientId", key = "#patientId")
+    public DossierMedicalGetDTO getByPatientId(int patientId) {
+        DossierMedical dossier = repo.findByPatientId(patientId).orElseThrow(() -> new RuntimeException("Aucun dossier médical trouvé pour ce patient"));
+
+        return mapper.toGetDTO(dossier);
+    }
+
+
+
+
+
+
+
 }
+
+

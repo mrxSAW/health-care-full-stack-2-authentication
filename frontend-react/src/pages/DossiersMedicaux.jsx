@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { getRole } from "../services/authService";
 import { getErrorMessage } from "../utils/errorHandler";
-import {
-  getAll,
-  create,
-  update,
-  remove,
-  downloadPdf,
-} from "../services/dossierMedicalService";
+import { getAll,create,update,remove,downloadPdf} from "../services/dossierMedicalService";
 import DossierMedicalForm from "../components/DossierMedicalForm";
+import { toast } from "react-toastify";
+
+
+
 
 function DossiersMedicaux() {
   const role = getRole();
@@ -32,9 +30,12 @@ function DossiersMedicaux() {
   async function loadDossiers() {
     try {
       const data = await getAll();
+      
       setDossiers(data.content || data);
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setError(message);
+      toast.error(message);
     }
   }
 
@@ -42,15 +43,19 @@ function DossiersMedicaux() {
     try {
       if (dossierToEdit) {
         await update(dossierToEdit.id, dossierData);
+        toast.success("Dossier médical modifié avec succès.");
       } else {
         await create(dossierData);
+        toast.success("Dossier médical ajouté avec succès.");
       }
 
       setShowForm(false);
       setDossierToEdit(null);
       loadDossiers();
     } catch (error) {
-      setError(getErrorMessage(error));
+     const message = getErrorMessage(error);
+     setError(message);
+     toast.error(message);
     }
   }
 
@@ -75,10 +80,13 @@ function DossiersMedicaux() {
   async function confirmDelete() {
     try {
       await remove(dossierToDelete.id);
+      toast.success("Dossier médical supprimé avec succès.");
       setDossierToDelete(null);
       loadDossiers();
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setError(message);
+      toast.error(message);
     }
   }
 
@@ -86,7 +94,9 @@ function DossiersMedicaux() {
     try {
       await downloadPdf(id);
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setError(message);
+      toast.error(message);
     }
   }
 
@@ -115,6 +125,8 @@ function DossiersMedicaux() {
         />
       )}
 
+
+{dossiers.length === 0 && !error && ( <p className="empty-message">Aucun dossier médical disponible.</p> )}
       <table className="simple-table">
         <thead>
           <tr>
@@ -135,18 +147,14 @@ function DossiersMedicaux() {
               <td>{dossier.dateCreation}</td>
 
               <td>
-                <button
-                  type="button"
-                  className="details-button"
+                <button type="button" className="details-button"
                   onClick={() => setSelectedDossier(dossier)}
                 >
                   Détails
                 </button>
 
                 {canEdit && (
-                  <button
-                    type="button"
-                    className="edit-button"
+                  <button type="button" className="edit-button"
                     onClick={() => openEditForm(dossier)}
                   >
                     Modifier
@@ -154,9 +162,7 @@ function DossiersMedicaux() {
                 )}
 
                 {canDelete && (
-                  <button
-                    type="button"
-                    className="delete-button"
+                  <button type="button"  className="delete-button"
                     onClick={() => openDeleteConfirmation(dossier)}
                   >
                     Supprimer
@@ -164,9 +170,7 @@ function DossiersMedicaux() {
                 )}
 
                 {canDownload && (
-                  <button
-                    type="button"
-                    className="details-button"
+                  <button type="button" className="details-button"
                     onClick={() => handleDownloadPdf(dossier.id)}
                   >
                     PDF

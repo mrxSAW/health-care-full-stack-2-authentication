@@ -10,6 +10,11 @@ export async function getById(id) {
   return response.data;
 }
 
+export async function getByPatientId(patientId) {
+  const response = await api.get(`/dossiers/patient/${patientId}`);
+  return response.data;
+}
+
 export async function create(dossier) {
   const response = await api.post("/dossiers", dossier);
   return response.data;

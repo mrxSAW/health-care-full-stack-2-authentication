@@ -4,6 +4,7 @@ import { getErrorMessage } from "../utils/errorHandler";
 import { getAll,searchByNom, create, update, remove } from "../services/patientService";
 import PatientForm from "../components/PatientForm";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 function Patients() {
   const role = getRole();
@@ -147,13 +148,10 @@ function Patients() {
               <td>{patient.email}</td>
               <td>{patient.telephone}</td>
               <td>
-                <button
-                  type="button"
-                  className="details-button"
-                  onClick={() => setSelectedPatient(patient)}
-                >
-                  Détails
-                </button>
+                
+                <Link to={`/patients/${patient.id}`} className="details-button">
+                      Détails
+                </Link>
 
                 {canEdit && (
                   <button

@@ -16,7 +16,7 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Unauthorized from "./pages/Unauthorized";
-
+import PatientDetails from "./pages/PatientDetails";
 
 function App() {
   return (
@@ -42,6 +42,7 @@ function App() {
               
               <Route element={<RoleGuard allowedRoles={["ADMIN", "MEDECIN"]} />}>
                 <Route path="/patients" element={<Patients />} />
+                <Route path="/patients/:id" element={<PatientDetails />} />
               </Route>
 
               <Route element={<RoleGuard allowedRoles={["ADMIN", "PATIENT"]} />}>

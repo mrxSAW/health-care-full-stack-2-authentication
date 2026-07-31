@@ -3,6 +3,7 @@ import { getRole } from "../services/authService";
 import { getErrorMessage } from "../utils/errorHandler";
 import { getAll, create, update, remove } from "../services/medecinService";
 import MedecinForm from "../components/MedecinForm";
+import { toast } from "react-toastify";
 
 function Medecins() {
   const role = getRole();
@@ -12,6 +13,7 @@ function Medecins() {
   const canDelete = role === "ADMIN";
 
   const [medecins, setMedecins] = useState([]);
+  const [specialiteFilter, setSpecialiteFilter] = useState("");
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [medecinToEdit, setMedecinToEdit] = useState(null);
@@ -27,7 +29,9 @@ function Medecins() {
       const data = await getAll();
       setMedecins(data.content || data);
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+        setError(message);
+       toast.error(message);
     }
   }
 
@@ -35,15 +39,19 @@ function Medecins() {
     try {
       if (medecinToEdit) {
         await update(medecinToEdit.id, medecinData);
+        toast.success("Médecin modifié avec succès.");
       } else {
         await create(medecinData);
+        toast.success("Médecin ajouté avec succès.");
       }
 
       setShowForm(false);
       setMedecinToEdit(null);
       loadMedecins();
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setError(message);
+      toast.error(message);
     }
   }
 
@@ -68,12 +76,23 @@ function Medecins() {
   async function confirmDelete() {
     try {
       await remove(medecinToDelete.id);
+      toast.success("Médecin supprimé avec succès.");
       setMedecinToDelete(null);
       loadMedecins();
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setError(message);
+      toast.error(message);
     }
   }
+
+
+    const specialites = [ ...new Set(medecins.map((medecin) => medecin.specialite).filter(Boolean))];
+
+    const filteredMedecins = specialiteFilter? medecins.filter((medecin) => medecin.specialite === specialiteFilter): medecins;
+    
+    
+
 
   return (
     <main className="page">
@@ -100,6 +119,26 @@ function Medecins() {
         />
       )}
 
+
+
+<div className="filters-bar">
+    <select value={specialiteFilter} onChange={(e) => setSpecialiteFilter(e.target.value)} >
+       <option value="">Toutes les spécialités</option>
+
+     {specialites.map((specialite) => (
+       <option key={specialite} value={specialite}>
+        {specialite}
+       </option>
+          ))}
+     </select>
+</div>
+
+{filteredMedecins.length === 0 && !error && (<p className="empty-message">Aucun médecin trouvé.</p>)}
+
+
+   
+
+
       <table className="simple-table">
         <thead>
           <tr>
@@ -113,7 +152,7 @@ function Medecins() {
         </thead>
 
         <tbody>
-          {medecins.map((medecin) => (
+          {filteredMedecins.map((medecin) => (
             <tr key={medecin.id}>
               <td>{medecin.id}</td>
               <td>{medecin.nom}</td>

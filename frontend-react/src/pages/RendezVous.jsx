@@ -3,6 +3,7 @@ import { getRole } from "../services/authService";
 import { getErrorMessage } from "../utils/errorHandler";
 import { getAll, create, update, remove } from "../services/rendezVousService";
 import RendezVousForm from "../components/RendezVousForm";
+import { toast } from "react-toastify";
 
 function RendezVous() {
   const role = getRole();
@@ -27,7 +28,9 @@ function RendezVous() {
       const data = await getAll();
       setRendezVous(data.content || data);
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+        setError(message);
+       toast.error(message);
     }
   }
 
@@ -35,15 +38,19 @@ function RendezVous() {
     try {
       if (rendezVousToEdit) {
         await update(rendezVousToEdit.id, rendezVousData);
+        toast.success("Rendez-vous modifié avec succès.");
       } else {
         await create(rendezVousData);
+        toast.success("Rendez-vous ajouté avec succès.");
       }
 
       setShowForm(false);
       setRendezVousToEdit(null);
       loadRendezVous();
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+        setError(message);
+       toast.error(message);
     }
   }
 
@@ -68,10 +75,13 @@ function RendezVous() {
   async function confirmDelete() {
     try {
       await remove(rendezVousToDelete.id);
+      toast.success("Rendez-vous ajouté avec succès.");
       setRendezVousToDelete(null);
       loadRendezVous();
     } catch (error) {
-      setError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+        setError(message);
+       toast.error(message);
     }
   }
 
@@ -99,6 +109,10 @@ function RendezVous() {
           }}
         />
       )}
+
+
+
+   {rendezVous.length === 0 && !error && ( <p className="empty-message">Aucun rendez-vous disponible.</p> )}
 
       <table className="simple-table">
         <thead>

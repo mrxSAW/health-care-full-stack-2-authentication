@@ -35,6 +35,9 @@ public class DossierMedicalController {
         return service.getMyDossier(email);
     }
 
+
+
+
     @GetMapping
     public PageResponseDTO<DossierMedicalGetDTO> list(@RequestParam(defaultValue = "0") int page,
                                                       @RequestParam(defaultValue = "5") int size,
@@ -44,6 +47,13 @@ public class DossierMedicalController {
         Pageable pageable = createPageable(page, size, sort, direction);
         return service.getAll(pageable);
     }
+
+
+    @GetMapping("/patient/{patientId}")
+    public DossierMedicalGetDTO getByPatientId(@PathVariable int patientId) {
+        return service.getByPatientId(patientId);
+    }
+
 
     @GetMapping("/{id}")
     public DossierMedicalGetDTO get(@PathVariable int id) {
